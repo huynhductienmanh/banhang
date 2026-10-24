@@ -1,3 +1,56 @@
+<?php
+session_start();
+include "connect.php";
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: index.php");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+$sql = "SELECT name,email,password 
+		FROM user
+		WHERE id = '$user_id'";
+		
+$result = $conn->query($sql);
+
+if($result && $result->num_rows>0){
+	$user = $result->fetch_assoc();
+	session_regenerate_id(true);
+}
+
+if(isset($_POST['submit'])){
+	$name = $_POST['name'];
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+
+	if ($password == "") {
+        $sql_update = "UPDATE user
+                       SET name = '$name',
+                           email = '$email'
+                       WHERE id = '$user_id'";
+    }else{
+        $password_md5 = md5($password);
+        $sql_update = "UPDATE user
+                       SET name = '$name',
+                           email = '$email',
+                           password = '$password_md5'
+                       WHERE id = '$user_id'";
+    }
+    $result = $conn->query($sql_update);
+    if ($result) {
+        $_SESSION['name'] = $_POST['name'];
+        header("Location: account.php");
+        exit();
+    } else {
+        echo "Cập nhật thất bại!";
+    }
+
+}
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -162,6 +215,11 @@
 									<h4 class="panel-title"><a href="#">My product</a></h4>
 								</div>
 							</div>
+							<div class="panel panel-default">
+								<div class="panel-heading">
+									<h4 class="panel-title"><a href="#">Add product</a></h4>
+								</div>
+							</div>
 							
 						</div><!--/category-products-->
 					
@@ -173,11 +231,11 @@
 						<h2 class="title text-center">Update user</h2>
 						 <div class="signup-form"><!--sign up form-->
 						<h2>New User Signup!</h2>
-						<form action="#">
-							<input type="text" placeholder="Name"/>
-							<input type="email" placeholder="Email Address"/>
-							<input type="password" placeholder="Password"/>
-							<button type="submit" class="btn btn-default">Signup</button>
+						<form action="#" method="POST">
+							<input type="text" placeholder="Name" value="<?=$user['name']?>" name = "name" />
+							<input type="email" placeholder="Email Address" value="<?=$user['email']?>" name="email"/>
+							<input type="password" placeholder="NewPassword" name="password"/>
+							<button type="submit" class="btn btn-default" name="submit">Signup</button>
 						</form>
 					</div>
 					</div>

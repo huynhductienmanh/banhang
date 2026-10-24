@@ -37,6 +37,8 @@ if(isset($_POST['submit'])){
 
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['name'] = $user['name'];
+			header("Location: index.php");
+			exit();
 
         } else {
             $login_error = "sai email hoac mat khau";

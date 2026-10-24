@@ -46,12 +46,12 @@ if (isset($_POST['submit'])) {
         $avatar_name = $_FILES['avatar']['name'];
         $avatar_tmp = $_FILES['avatar']['tmp_name'];
         $duongdan = "uploads/" . basename($avatar_name);
-        move_uploaded_file($avatar_tmp, $duongdan);
 
         $sql = "INSERT INTO `user` (name, email, password, avatar)
         VALUES ('$name', '$email', '$password_md5', '$avatar_name')";
 
         if ($conn->query($sql)) {
+			move_uploaded_file($avatar_tmp, $duongdan);
             echo "Đăng ký thành công";
         } else {
             echo "Đăng ký thất bại: " . $conn->error;
@@ -71,7 +71,7 @@ if (isset($_POST['submit'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Login | E-Shopper</title>
+    <title>Register | E-Shopper</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/font-awesome.min.css" rel="stylesheet">
     <link href="css/prettyPhoto.css" rel="stylesheet">
@@ -156,7 +156,7 @@ if (isset($_POST['submit'])) {
 								<li><a href=""><i class="fa fa-star"></i> Wishlist</a></li>
 								<li><a href="checkout.html"><i class="fa fa-crosshairs"></i> Checkout</a></li>
 								<li><a href="cart.html"><i class="fa fa-shopping-cart"></i> Cart</a></li>
-								<li><a href="login.html"><i class="fa fa-lock"></i> Login</a></li>
+								<li><a href="loginform.php"><i class="fa fa-lock"></i> Login</a></li>
 							</ul>
 						</div>
 					</div>
@@ -185,7 +185,7 @@ if (isset($_POST['submit'])) {
 										<li><a href="product-details.html">Product Details</a></li> 
 										<li><a href="checkout.html">Checkout</a></li> 
 										<li><a href="cart.html">Cart</a></li> 
-										<li><a href="login.html" class="active">Login</a></li> 
+										<li><a href="loginform.php" class="active">Login</a></li> 
                                     </ul>
                                 </li> 
 								<li class="dropdown"><a href="#">Blog<i class="fa fa-angle-down"></i></a>
