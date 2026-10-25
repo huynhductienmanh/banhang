@@ -1,3 +1,52 @@
+<?php
+session_start();
+include "connect.php";
+
+$user_id = $_SESSION['user_id'];
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$sql = "SELECT * FROM product WHERE id_user = '$user_id' ORDER BY id DESC";
+
+$result = $conn->query($sql);
+$data = [];
+	if ($result->num_rows > 0) {
+		while ($row = $result->fetch_assoc()) {
+			$data[] = $row;
+		}
+	}
+$html = '';
+foreach ($data as $value){
+	$html .='
+		<tr>
+			<td class="cart_product">
+				<a  href=""><img src="uploads/'.$value['image'].'" alt="" style="width: 100px; height: 100px; object-fit: cover;"></a>
+			</td>
+			<td class="cart_description">
+				<h4><a href="">'.$value['title'].'</a></h4>
+				
+			</td>
+			<td class="cart_price">
+				<p>$'.$value['price'].'</p>
+			</td>
+			
+			<td class="cart_total">
+				<a>Edit</a>
+				<a href="delete-product.php?id='.$value['id'].'">Delete</a>
+			</td>
+			
+		</tr>
+	';
+
+}
+
+
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -162,6 +211,11 @@
 									<h4 class="panel-title"><a href="#">My product</a></h4>
 								</div>
 							</div>
+							<div class="panel panel-default">
+								<div class="panel-heading">
+									<h4 class="panel-title"><a href="add-product.php">Add product</a></h4>
+								</div>
+							</div>
 							
 						</div><!--/category-products-->
 					
@@ -182,66 +236,7 @@
 								</tr>
 							</thead>
 							<tbody>
-
-								
-								<tr>
-									<td class="cart_product">
-										<a href=""><img src="images/cart/one.png" alt=""></a>
-									</td>
-									<td class="cart_description">
-										<h4><a href="">Colorblock Scuba</a></h4>
-										
-									</td>
-									<td class="cart_price">
-										<p>$59</p>
-									</td>
-									
-									<td class="cart_total">
-										<a>edit</a>
-										<a>delete</a>
-									</td>
-									
-								</tr>
-								<tr>
-									<td class="cart_product">
-										<a href=""><img src="images/cart/one.png" alt=""></a>
-									</td>
-									<td class="cart_description">
-										<h4><a href="">Colorblock Scuba</a></h4>
-										
-									</td>
-									<td class="cart_price">
-										<p>$59</p>
-									</td>
-									
-									<td class="cart_total">
-										<a>edit</a>
-										<a>delete</a>
-									</td>
-									
-								</tr>
-								<tr>
-									<td class="cart_product">
-										<a href=""><img src="images/cart/one.png" alt=""></a>
-									</td>
-									<td class="cart_description">
-										<h4><a href="">Colorblock Scuba</a></h4>
-										
-									</td>
-									<td class="cart_price">
-										<p>$59</p>
-									</td>
-									
-									<td class="cart_total">
-										<a>edit</a>
-										<a>delete</a>
-									</td>
-									
-								</tr>
-
-
-
-							
+								<?= $html?>
 							</tbody>
 						</table>
 					</div>

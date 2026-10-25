@@ -1,3 +1,64 @@
+<?php
+session_start();
+include "connect.php";
+$error_title ="";
+$error_price = "";
+$img_error = "";
+$thongbao = "";
+$user_id = $_SESSION['user_id'];
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+
+if(isset($_POST['submit'])){
+	$title = $_POST['title'];
+	$price = $_POST['price'];
+	$img = $_FILES['img'];
+	$d = 1 ;
+
+	if($title == ""){
+		$error_title = "vui long nhap title";
+		$d = 2;
+	}
+
+	if($price == "" || $price < 0){
+		$error_price = "vui long nhap gia tien hop le";
+	}
+
+	if ($_FILES['img']['error'] == 4) {
+		$img_error = "Vui lòng chọn ảnh sản phẩm";
+		$d = 2;
+	} elseif ($_FILES['img']['error'] != 0) {
+		$img_error = "Upload ảnh thất bại";
+		$d = 2;
+	}
+
+	if($d == 1){
+		$img_name = $_FILES['img']['name'];
+
+		move_uploaded_file(
+			$_FILES['img']['tmp_name'],
+			"uploads/" . $img_name
+    	);
+
+		$sql = "INSERT INTO product (title, price, image, id_user)
+                VALUES ('$title', '$price', '$img_name', '$user_id')";
+
+		$result = $conn->query($sql);
+		if($result){
+			$thongbao = "add product thanh cong ";
+		}else{
+			$thongbao = "add product that bai";
+		}
+	}
+
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +66,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Blog | E-Shopper</title>
+    <title>Add Product | E-Shopper</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/font-awesome.min.css" rel="stylesheet">
     <link href="css/prettyPhoto.css" rel="stylesheet">
@@ -159,7 +220,7 @@
 							</div>
 							<div class="panel panel-default">
 								<div class="panel-heading">
-									<h4 class="panel-title"><a href="#">My product</a></h4>
+									<h4 class="panel-title"><a href="my-product.php">My product</a></h4>
 								</div>
 							</div>
 							<div class="panel panel-default">
@@ -177,12 +238,15 @@
 					<div class="blog-post-area">
 						<h2 class="title text-center">Update user</h2>
 						 <div class="signup-form"><!--sign up form-->
-						<h2>New User Signup!</h2>
-						<form action="#">
-							<input type="text" placeholder="Name"/>
-							<input type="email" placeholder="Email Address"/>
-							<input type="password" placeholder="Password"/>
-							<button type="submit" class="btn btn-default">Signup</button>
+						<h2>Add new product</h2>
+						<form action="#" method="POST" enctype="multipart/form-data">
+							<input type="text" placeholder="Title" name="title"/>
+							<?= $error_title?>
+							<input type="number" placeholder="Price" name="price"/>
+							<?= $error_price?>
+							<input type="file" placeholder="image" name="img"/>
+							<?= $img_error?>
+							<button type="submit" class="btn btn-default" name="submit">Add</button>
 						</form>
 					</div>
 					</div>
