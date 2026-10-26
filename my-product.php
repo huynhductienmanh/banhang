@@ -34,7 +34,7 @@ foreach ($data as $value){
 			</td>
 			
 			<td class="cart_total">
-				<a>Edit</a>
+				<a href="edit-product.php?id='.$value['id'].'">Edit</a>
 				<a href="delete-product.php?id='.$value['id'].'">Delete</a>
 			</td>
 			

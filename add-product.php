@@ -26,6 +26,7 @@ if(isset($_POST['submit'])){
 
 	if($price == "" || $price < 0){
 		$error_price = "vui long nhap gia tien hop le";
+		$d= 2;
 	}
 
 	if ($_FILES['img']['error'] == 4) {
