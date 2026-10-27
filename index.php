@@ -31,13 +31,13 @@ foreach ($data as $value) {
 							<img src="uploads/'.$value['image'].'" alt="" />
 							<h2>$'.$value['price'].'</h2>
 							<p>'.$value['title'].'</p>
-							<a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
+							<a href="#"  data-id="'.$value['id'].'" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
 						</div>
 						<div class="product-overlay">
 							<div class="overlay-content">
 								<h2>$'.$value['price'].'</h2>
 								<p>'.$value['title'].'</p>
-								<a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
+								<a href="#"  data-id="'.$value['id'].'" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
 							</div>
 						</div>
 				</div>
@@ -50,6 +50,24 @@ foreach ($data as $value) {
 			</div>
 		</div>
 	';
+}
+
+$data = json_decode(file_get_contents('php://input'), true);
+if(isset($data['id'])){
+	$id = $data['id'];
+	$sql =" SELECT id FROM product WHERE id = '$id'";
+	$result = $conn->query($sql);
+	if (!isset($_SESSION['cart'])) {
+        $_SESSION['cart'] = [];
+    }
+	if (isset($_SESSION['cart'][$id])) {
+        $_SESSION['cart'][$id]++;
+    } else {
+        $_SESSION['cart'][$id] = 1;
+    }
+	header('Content-Type: application/json; charset=utf-8');
+	exit;
+
 }
 
 
@@ -973,5 +991,29 @@ foreach ($data as $value) {
 	<script src="js/price-range.js"></script>
     <script src="js/jquery.prettyPhoto.js"></script>
     <script src="js/main.js"></script>
+	<script>
+		document.querySelectorAll('.add-to-cart').forEach(function(button) {
+			button.addEventListener('click', async function(e) {
+				e.preventDefault();
+				let id = this.dataset.id;
+
+				if (!id) {
+					alert('Không tìm thấy ID sản phẩm!');
+					return;
+				}
+
+				const response = await fetch('index.php', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ id: id })
+				});
+
+				const data = await response.json();
+				console.log(data);
+			});
+		});
+	</script>
 </body>
 </html>
