@@ -1,3 +1,87 @@
+<?php
+session_start();
+include "connect.php";
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: index.php");
+    exit();
+}
+
+$cart = $_SESSION['cart'];
+$html = '';
+
+foreach ($cart as $id => $quantity) {
+
+    $id = (int)$id;
+
+    $sql = "SELECT * FROM product WHERE id = '$id'";
+    $result = $conn->query($sql);
+
+    if ($result && $result->num_rows > 0) {
+        $value = $result->fetch_assoc();
+
+        $total = $value['price'] * $quantity;
+
+        $html .='
+		<tr>
+			<td class="cart_product">
+				<a href=""><img src="uploads/'.$value['image'].'" 
+							style="width: 100px; height: 100px; object-fit: contain;" 
+							alt=""></a>
+			</td>
+			<td class="cart_description">
+				<h4><a href="">'.$value['title'].'</a></h4>
+				<p>Web ID: 1089772</p>
+			</td>
+			<td class="cart_price">
+				<p>$'.$value['price'].'</p>
+			</td>
+			<td class="cart_quantity">
+				<div class="cart_quantity_button">
+					<a class="cart_quantity_up" href="#" data-id="'.$id.'" > + </a>
+					<input class="cart_quantity_input" type="text" name="quantity" value="'.$quantity.'" autocomplete="off" size="2">
+					<a class="cart_quantity_down" href="#" data-id="'.$id.'"> - </a>
+				</div>
+			</td>
+			<td class="cart_total">
+				<p class="cart_total_price">$'.$total.'</p>
+			</td>
+			<td class="cart_delete">
+				<a class="cart_quantity_delete" href="#" data-id="'.$id.'"><i class="fa fa-times"></i></a>
+			</td>
+		</tr>
+	';
+    }
+}
+
+
+$data = json_decode(file_get_contents('php://input'), true);
+if (isset($data['id']) && isset($data['action'])) {
+
+    $id = (int)$data['id'];
+    $action = $data['action'];
+
+    if ($action == 'tang' && isset($_SESSION['cart'][$id])) {
+        $_SESSION['cart'][$id]++;
+    }
+	if ($action == 'giam' && isset($_SESSION['cart'][$id])) {
+        $_SESSION['cart'][$id]--;
+    }
+	if ($action == 'xoa' && isset($_SESSION['cart'][$id])) {
+		unset($_SESSION['cart'][$id]);
+	}
+
+    header('Content-Type: application/json; charset=utf-8');
+
+    echo json_encode([
+        'quantity' => $_SESSION['cart'][$id] ?? 0,
+        'cart' => $_SESSION['cart']
+    ]);
+    exit;
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -57,7 +141,7 @@
 				<div class="row">
 					<div class="col-md-4 clearfix">
 						<div class="logo pull-left">
-							<a href="index.html"><img src="images/home/logo.png" alt="" /></a>
+							<a href="index.php"><img src="images/home/logo.png" alt="" /></a>
 						</div>
 						<div class="btn-group pull-right clearfix">
 							<div class="btn-group">
@@ -112,7 +196,7 @@
 						</div>
 						<div class="mainmenu pull-left">
 							<ul class="nav navbar-nav collapse navbar-collapse">
-								<li><a href="index.html">Home</a></li>
+								<li><a href="index.php">Home</a></li>
 								<li class="dropdown"><a href="#">Shop<i class="fa fa-angle-down"></i></a>
                                     <ul role="menu" class="sub-menu">
                                         <li><a href="shop.html">Products</a></li>
@@ -164,82 +248,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr>
-							<td class="cart_product">
-								<a href=""><img src="images/cart/one.png" alt=""></a>
-							</td>
-							<td class="cart_description">
-								<h4><a href="">Colorblock Scuba</a></h4>
-								<p>Web ID: 1089772</p>
-							</td>
-							<td class="cart_price">
-								<p>$59</p>
-							</td>
-							<td class="cart_quantity">
-								<div class="cart_quantity_button">
-									<a class="cart_quantity_up" href=""> + </a>
-									<input class="cart_quantity_input" type="text" name="quantity" value="1" autocomplete="off" size="2">
-									<a class="cart_quantity_down" href=""> - </a>
-								</div>
-							</td>
-							<td class="cart_total">
-								<p class="cart_total_price">$59</p>
-							</td>
-							<td class="cart_delete">
-								<a class="cart_quantity_delete" href=""><i class="fa fa-times"></i></a>
-							</td>
-						</tr>
-
-						<tr>
-							<td class="cart_product">
-								<a href=""><img src="images/cart/two.png" alt=""></a>
-							</td>
-							<td class="cart_description">
-								<h4><a href="">Colorblock Scuba</a></h4>
-								<p>Web ID: 1089772</p>
-							</td>
-							<td class="cart_price">
-								<p>$59</p>
-							</td>
-							<td class="cart_quantity">
-								<div class="cart_quantity_button">
-									<a class="cart_quantity_up" href=""> + </a>
-									<input class="cart_quantity_input" type="text" name="quantity" value="1" autocomplete="off" size="2">
-									<a class="cart_quantity_down" href=""> - </a>
-								</div>
-							</td>
-							<td class="cart_total">
-								<p class="cart_total_price">$59</p>
-							</td>
-							<td class="cart_delete">
-								<a class="cart_quantity_delete" href=""><i class="fa fa-times"></i></a>
-							</td>
-						</tr>
-						<tr>
-							<td class="cart_product">
-								<a href=""><img src="images/cart/three.png" alt=""></a>
-							</td>
-							<td class="cart_description">
-								<h4><a href="">Colorblock Scuba</a></h4>
-								<p>Web ID: 1089772</p>
-							</td>
-							<td class="cart_price">
-								<p>$59</p>
-							</td>
-							<td class="cart_quantity">
-								<div class="cart_quantity_button">
-									<a class="cart_quantity_up" href=""> + </a>
-									<input class="cart_quantity_input" type="text" name="quantity" value="1" autocomplete="off" size="2">
-									<a class="cart_quantity_down" href=""> - </a>
-								</div>
-							</td>
-							<td class="cart_total">
-								<p class="cart_total_price">$59</p>
-							</td>
-							<td class="cart_delete">
-								<a class="cart_quantity_delete" href=""><i class="fa fa-times"></i></a>
-							</td>
-						</tr>
+						<?= $html?>
 					</tbody>
 				</table>
 			</div>
@@ -488,5 +497,78 @@
 	<script src="js/jquery.scrollUp.min.js"></script>
     <script src="js/jquery.prettyPhoto.js"></script>
     <script src="js/main.js"></script>
+	<script>
+		document.querySelectorAll('.cart_quantity_up').forEach(function(button){
+			button.addEventListener('click', async function(e){
+				e.preventDefault();
+				let id = this.dataset.id;
+				const response = await fetch('cart.php', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						id: id,
+						action: 'tang'
+					})
+				});
+				const data = await response.json();
+        		console.log(data);
+				this.parentElement.querySelector('.cart_quantity_input').value = data.quantity;
+				let row = this.closest('tr');
+				let price = row.querySelector('.cart_price p').textContent;
+            	price = Number(price.replace('$', ''))
+				let total = price * data.quantity;
+				row.querySelector('.cart_total_price').textContent = '$' + total;
+			});
+		})
+		document.querySelectorAll('.cart_quantity_down').forEach(function(button){
+			button.addEventListener('click', async function(e){
+				e.preventDefault();
+				let id = this.dataset.id;
+				const response = await fetch('cart.php', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						id: id,
+						action: 'giam'
+					})
+				});
+				const data = await response.json();
+        		console.log(data);
+				this.parentElement.querySelector('.cart_quantity_input').value = data.quantity;
+				let row = this.closest('tr');
+				let price = row.querySelector('.cart_price p').textContent;
+            	price = Number(price.replace('$', ''))
+				let total = price * data.quantity;
+				row.querySelector('.cart_total_price').textContent = '$' + total;
+			});
+		})
+		document.querySelectorAll('.cart_quantity_delete').forEach(function(button){
+			button.addEventListener('click', async function(e){
+				e.preventDefault();
+
+				let id = this.dataset.id;
+
+				const response = await fetch('cart.php', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						id: id,
+						action: 'xoa'
+					})
+				});
+
+				const data = await response.json();
+				console.log(data);
+
+				this.closest('tr').remove();
+			});
+		});
+	</script>
 </body>
 </html>
