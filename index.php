@@ -175,7 +175,7 @@ if(isset($data['id'])){
 								<li><a href="account.php"><i class="fa fa-user"></i> Account</a></li>
 								<li><a href=""><i class="fa fa-star"></i> Wishlist</a></li>
 								<li><a href="checkout.html"><i class="fa fa-crosshairs"></i> Checkout</a></li>
-								<li><a href="cart.php"><i class="fa fa-shopping-cart"></i>Cart (<span id="cart-count"><?= array_sum($_SESSION['cart']) ?></span>)</a></li>
+								<li><a href="cart.php"><i class="fa fa-shopping-cart"></i>Cart (<span id="cart-count"><?= array_sum($_SESSION['cart'] ?? [])  ?></span>)</a></li>
 								<li><a href="<?=$trangthai?>.php"><i class="fa fa-lock"></i><?=$trangthai ?></a></li>
 							</ul>
 						</div>

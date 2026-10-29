@@ -38,9 +38,9 @@ foreach ($cart as $id => $quantity) {
 			</td>
 			<td class="cart_quantity">
 				<div class="cart_quantity_button">
-					<a class="cart_quantity_up" href="#" data-id="'.$id.'" > + </a>
+					<a class="cart_quantity_up"  data-id="'.$id.'" > + </a>
 					<input class="cart_quantity_input" type="text" name="quantity" value="'.$quantity.'" autocomplete="off" size="2">
-					<a class="cart_quantity_down" href="#" data-id="'.$id.'"> - </a>
+					<a class="cart_quantity_down" data-id="'.$id.'"> - </a>
 				</div>
 			</td>
 			<td class="cart_total">
@@ -54,31 +54,6 @@ foreach ($cart as $id => $quantity) {
     }
 }
 
-
-$data = json_decode(file_get_contents('php://input'), true);
-if (isset($data['id']) && isset($data['action'])) {
-
-    $id = (int)$data['id'];
-    $action = $data['action'];
-
-    if ($action == 'tang' && isset($_SESSION['cart'][$id])) {
-        $_SESSION['cart'][$id]++;
-    }
-	if ($action == 'giam' && isset($_SESSION['cart'][$id])) {
-        $_SESSION['cart'][$id]--;
-    }
-	if ($action == 'xoa' && isset($_SESSION['cart'][$id])) {
-		unset($_SESSION['cart'][$id]);
-	}
-
-    header('Content-Type: application/json; charset=utf-8');
-
-    echo json_encode([
-        'quantity' => $_SESSION['cart'][$id] ?? 0,
-        'cart' => $_SESSION['cart']
-    ]);
-    exit;
-}
 ?>
 
 
@@ -173,7 +148,7 @@ if (isset($data['id']) && isset($data['action'])) {
 								<li><a href=""><i class="fa fa-user"></i> Account</a></li>
 								<li><a href=""><i class="fa fa-star"></i> Wishlist</a></li>
 								<li><a href="checkout.html"><i class="fa fa-crosshairs"></i> Checkout</a></li>
-								<li><a href="cart.html"><i class="fa fa-shopping-cart"></i> Cart</a></li>
+								<li><a href="cart.html"><i class="fa fa-shopping-cart"></i>Cart (<span id="cart-count"> <?= array_sum($_SESSION['cart'] ?? [])?>)</a></li>
 								<li><a href="login.html"><i class="fa fa-lock"></i> Login</a></li>
 							</ul>
 						</div>
@@ -202,7 +177,7 @@ if (isset($data['id']) && isset($data['action'])) {
                                         <li><a href="shop.html">Products</a></li>
 										<li><a href="product-details.html">Product Details</a></li> 
 										<li><a href="checkout.html">Checkout</a></li> 
-										<li><a href="cart.html" class="active">Cart</a></li> 
+										<li><a href="cart.html" class="active">cart</a></li> 
 										<li><a href="login.html">Login</a></li> 
                                     </ul>
                                 </li> 
@@ -498,52 +473,40 @@ if (isset($data['id']) && isset($data['action'])) {
     <script src="js/jquery.prettyPhoto.js"></script>
     <script src="js/main.js"></script>
 	<script>
-		document.querySelectorAll('.cart_quantity_up').forEach(function(button){
+		document.querySelectorAll('.cart_quantity_button').forEach(function(button){
 			button.addEventListener('click', async function(e){
 				e.preventDefault();
-				let id = this.dataset.id;
-				const response = await fetch('cart.php', {
+				let btn = e.target;
+				let id = btn.dataset.id;;
+				if (btn.classList.contains('cart_quantity_up')) {
+					var action = 'tang';
+				}
+				else if (btn.classList.contains('cart_quantity_down')) {
+					var action = 'giam';
+				}
+				const response = await fetch('ajax_handle_cart.php', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify({
 						id: id,
-						action: 'tang'
+						action: action
 					})
 				});
 				const data = await response.json();
         		console.log(data);
-				this.parentElement.querySelector('.cart_quantity_input').value = data.quantity;
+				if (data.error) {
+					alert(data.error);
+					return;
+				}
+				this.querySelector('.cart_quantity_input').value = data.quantity;
 				let row = this.closest('tr');
 				let price = row.querySelector('.cart_price p').textContent;
             	price = Number(price.replace('$', ''))
 				let total = price * data.quantity;
 				row.querySelector('.cart_total_price').textContent = '$' + total;
-			});
-		})
-		document.querySelectorAll('.cart_quantity_down').forEach(function(button){
-			button.addEventListener('click', async function(e){
-				e.preventDefault();
-				let id = this.dataset.id;
-				const response = await fetch('cart.php', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({
-						id: id,
-						action: 'giam'
-					})
-				});
-				const data = await response.json();
-        		console.log(data);
-				this.parentElement.querySelector('.cart_quantity_input').value = data.quantity;
-				let row = this.closest('tr');
-				let price = row.querySelector('.cart_price p').textContent;
-            	price = Number(price.replace('$', ''))
-				let total = price * data.quantity;
-				row.querySelector('.cart_total_price').textContent = '$' + total;
+				document.getElementById('cart-count').textContent = data.total
 			});
 		})
 		document.querySelectorAll('.cart_quantity_delete').forEach(function(button){
@@ -551,8 +514,7 @@ if (isset($data['id']) && isset($data['action'])) {
 				e.preventDefault();
 
 				let id = this.dataset.id;
-
-				const response = await fetch('cart.php', {
+				const response = await fetch('ajax_handle_cart.php', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json'
@@ -567,6 +529,7 @@ if (isset($data['id']) && isset($data['action'])) {
 				console.log(data);
 
 				this.closest('tr').remove();
+				document.getElementById('cart-count').textContent = data.total
 			});
 		});
 	</script>
